@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_steps"
+        android:title="Pas"
+        android:icon="@android:drawable/ic_menu_directions"/>
+
+    <item
+        android:id="@+id/nav_calories"
+        android:title="Calories"
+        android:icon="@android:drawable/ic_menu_compass"/>
+
+    <item
+        android:id="@+id/nav_friends"
+        android:title="Amis"
+        android:icon="@android:drawable/ic_menu_myplaces"/>
+
+    <item
+        android:id="@+id/nav_stats"
+        android:title="Stats"
+        android:icon="@android:drawable/ic_menu_agenda"/>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Logout"
+        android:icon="@drawable/ic_logout"/>
+
+</menu>

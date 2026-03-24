@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1031614153948",
+    "project_id": "projet-session-gif-3101",
+    "storage_bucket": "projet-session-gif-3101.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1031614153948:android:6a65ece0d835a8f97da019",
+        "android_client_info": {
+          "package_name": "ca.ulaval.ima.mp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAdUqK6h_AZP627Cr80OFNv_kH8GfvoHyk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
