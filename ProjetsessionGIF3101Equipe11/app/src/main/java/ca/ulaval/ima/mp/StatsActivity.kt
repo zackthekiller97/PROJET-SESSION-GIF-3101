@@ -2,7 +2,7 @@ package ca.ulaval.ima.mp
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class StatsActivity : AppCompatActivity() {
+
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
@@ -26,6 +27,7 @@ class StatsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_stats)
 
+
         setupNavigation()
         tvTotalSteps = findViewById(R.id.tv_total_steps)
         tvTotalCals = findViewById(R.id.tv_total_cals)
@@ -33,22 +35,21 @@ class StatsActivity : AppCompatActivity() {
         tvAvgCals = findViewById(R.id.tv_avg_cals)
         lineChart = findViewById(R.id.caloriesChart)
 
-        // 2. Utiliser le type générique View ou Button pour éviter les crashs de cast
-        val btn7Days = findViewById<android.view.View>(R.id.btn_7_days)
-        val btn30Days = findViewById<android.view.View>(R.id.btn_30_days)
+
+        val btn7Days = findViewById<View>(R.id.btn_7_days)
+        val btn30Days = findViewById<View>(R.id.btn_30_days)
 
         btn7Days.setOnClickListener { fetchDataForRange(7) }
         btn30Days.setOnClickListener { fetchDataForRange(30) }
 
-        // 3. Charger les données en dernier
+
         fetchDataForRange(7)
     }
 
     private fun fetchDataForRange(days: Int) {
         val uid = auth.currentUser?.uid ?: return
-
-        // Réinitialisation des compteurs et de la liste
         val entries = mutableListOf<Entry>()
+
         var sumSteps = 0
         var sumCalories = 0
         var daysWithSteps = 0
@@ -57,7 +58,7 @@ class StatsActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val calendar = Calendar.getInstance()
 
-        // Générer la liste des dates basée sur le paramètre 'days'
+
         val daysToFetch = (0 until days).map {
             val date = sdf.format(calendar.time)
             calendar.add(Calendar.DAY_OF_YEAR, -1)
@@ -69,11 +70,13 @@ class StatsActivity : AppCompatActivity() {
             db.collection("users").document(uid)
                 .collection("dailyStats").document(date).get()
                 .addOnSuccessListener { document ->
+                    // Récupération des pas
                     val steps = document.getLong("steps")?.toInt() ?: 0
                     if (steps > 0) {
                         sumSteps += steps
                         daysWithSteps++
                     }
+
 
                     db.collection("users").document(uid)
                         .collection("dailyStats").document(date)
@@ -88,7 +91,6 @@ class StatsActivity : AppCompatActivity() {
                             entries.add(Entry(index.toFloat(), dayCalories.toFloat()))
                             processedDays++
 
-
                             if (processedDays == days) {
                                 updateUI(entries, sumSteps, sumCalories, daysWithSteps, daysWithCals)
                             }
@@ -96,13 +98,27 @@ class StatsActivity : AppCompatActivity() {
                 }
         }
     }
-    private fun updateChart(entries: List<Entry>) {
 
+    private fun updateUI(entries: List<Entry>, totalSteps: Int, totalCals: Int, daysSteps: Int, daysCals: Int) {
+        tvTotalSteps.text = totalSteps.toString()
+        tvTotalCals.text = totalCals.toString()
+
+
+        val avgSteps = if (daysSteps > 0) totalSteps / daysSteps else 0
+        val avgCals = if (daysCals > 0) totalCals / daysCals else 0
+
+        tvAvgSteps.text = "Moy: $avgSteps/jour"
+        tvAvgCals.text = "Moy: $avgCals/jour"
+
+        updateChart(entries)
+    }
+
+    private fun updateChart(entries: List<Entry>) {
         if (entries.isEmpty()) return
 
         val dataSet = LineDataSet(entries, "Calories consommées").apply {
-            setDrawCircles(entries.size <= 7)
             color = android.graphics.Color.BLUE
+            setDrawCircles(entries.size <= 7) // Cercles uniquement si peu de points
             valueTextSize = 10f
             setDrawFilled(true)
             fillColor = android.graphics.Color.LTGRAY
@@ -117,10 +133,7 @@ class StatsActivity : AppCompatActivity() {
 
     private fun setupNavigation() {
         val nav = findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottomNavigation)
-
-
         nav.selectedItemId = R.id.nav_stats
-
         nav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_steps -> {
@@ -131,7 +144,7 @@ class StatsActivity : AppCompatActivity() {
                     startActivity(Intent(this, CaloriesActivity::class.java))
                     true
                 }
-                R.id.nav_stats -> true // On est déjà sur cet écran
+                R.id.nav_stats -> true
                 R.id.nav_logout -> {
                     auth.signOut()
                     startActivity(Intent(this, LoginActivity::class.java))
@@ -142,19 +155,4 @@ class StatsActivity : AppCompatActivity() {
             }
         }
     }
-
-    private fun updateUI(entries: List<Entry>, totalSteps: Int, totalCals: Int, daysSteps: Int, daysCals: Int) {
-        tvTotalSteps.text = totalSteps.toString()
-        tvTotalCals.text = totalCals.toString()
-
-        val avgSteps = if (daysSteps > 0) totalSteps / daysSteps else 0
-        val avgCals = if (daysCals > 0) totalCals / daysCals else 0
-
-        // Utiliser les variables lateinit au lieu de findViewById ici
-        tvAvgSteps.text = "Moy: $avgSteps/jour"
-        tvAvgCals.text = "Moy: $avgCals/jour"
-
-        updateChart(entries)
-    }
-
 }
