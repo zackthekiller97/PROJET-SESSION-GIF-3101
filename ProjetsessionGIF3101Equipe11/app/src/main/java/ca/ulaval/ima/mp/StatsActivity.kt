@@ -13,12 +13,14 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class StatsActivity : AppCompatActivity() {
-
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+
     private lateinit var lineChart: LineChart
     private lateinit var tvTotalSteps: TextView
     private lateinit var tvTotalCals: TextView
+    private lateinit var tvAvgSteps: TextView
+    private lateinit var tvAvgCals: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,20 +29,18 @@ class StatsActivity : AppCompatActivity() {
         setupNavigation()
         tvTotalSteps = findViewById(R.id.tv_total_steps)
         tvTotalCals = findViewById(R.id.tv_total_cals)
-
+        tvAvgSteps = findViewById(R.id.tv_avg_steps)
+        tvAvgCals = findViewById(R.id.tv_avg_cals)
         lineChart = findViewById(R.id.caloriesChart)
-        val btn7Days = findViewById<Button>(R.id.btn_7_days)
-        val btn30Days = findViewById<Button>(R.id.btn_30_days)
 
-        btn7Days.setOnClickListener {
-            fetchDataForRange(7)
-        }
+        // 2. Utiliser le type générique View ou Button pour éviter les crashs de cast
+        val btn7Days = findViewById<android.view.View>(R.id.btn_7_days)
+        val btn30Days = findViewById<android.view.View>(R.id.btn_30_days)
 
-        btn30Days.setOnClickListener {
-            fetchDataForRange(30)
-        }
+        btn7Days.setOnClickListener { fetchDataForRange(7) }
+        btn30Days.setOnClickListener { fetchDataForRange(30) }
 
-        // Chargement par défaut au démarrage
+        // 3. Charger les données en dernier
         fetchDataForRange(7)
     }
 
@@ -88,7 +88,7 @@ class StatsActivity : AppCompatActivity() {
                             entries.add(Entry(index.toFloat(), dayCalories.toFloat()))
                             processedDays++
 
-                            // Vérifier si on a fini de boucler sur tous les jours demandés
+
                             if (processedDays == days) {
                                 updateUI(entries, sumSteps, sumCalories, daysWithSteps, daysWithCals)
                             }
@@ -147,13 +147,12 @@ class StatsActivity : AppCompatActivity() {
         tvTotalSteps.text = totalSteps.toString()
         tvTotalCals.text = totalCals.toString()
 
-        // Calcul de la moyenne exacte
         val avgSteps = if (daysSteps > 0) totalSteps / daysSteps else 0
         val avgCals = if (daysCals > 0) totalCals / daysCals else 0
 
-
-        findViewById<TextView>(R.id.tv_avg_steps).text = "Moy: $avgSteps/jour"
-        findViewById<TextView>(R.id.tv_avg_cals).text = "Moy: $avgCals/jour"
+        // Utiliser les variables lateinit au lieu de findViewById ici
+        tvAvgSteps.text = "Moy: $avgSteps/jour"
+        tvAvgCals.text = "Moy: $avgCals/jour"
 
         updateChart(entries)
     }
