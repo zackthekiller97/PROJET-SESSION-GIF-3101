@@ -17,10 +17,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -157,14 +157,24 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private fun saveStepsToFirebase(steps: Int, calories: Int) {
         currentUser?.let { user ->
             val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
             val data = hashMapOf(
                 "steps" to steps,
                 "caloriesBurned" to calories,
                 "date" to today
             )
+
             db.collection("users").document(user.uid)
                 .collection("dailyStats").document(today)
                 .set(data)
+
+            db.collection("users").document(user.uid)
+                .update(
+                    mapOf(
+                        "lastSteps" to steps,
+                        "lastCalories" to calories
+                    )
+                )
         }
     }
 

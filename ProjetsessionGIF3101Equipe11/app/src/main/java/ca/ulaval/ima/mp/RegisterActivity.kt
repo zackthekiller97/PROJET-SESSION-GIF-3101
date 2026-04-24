@@ -65,7 +65,10 @@ class RegisterActivity : AppCompatActivity() {
 
                     val userMap = hashMapOf(
                         "fullName" to fullName,
-                        "email" to email
+                        "email" to email,
+                        "friends" to listOf<String>(),
+                        "lastSteps" to 0,
+                        "lastCalories" to 0
                     )
 
                     db.collection("users")
