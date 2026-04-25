@@ -1,47 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8.dp"
-    app:cardCornerRadius="8.dp"
-    app:cardElevation="4.dp">
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16.dp">
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical">
 
+        <!-- Rang / médaille -->
         <TextView
-            android:id="@+id/friend_email"
+            android:id="@+id/friend_rank"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:gravity="center"
+            android:text="1"
+            android:textStyle="bold"/>
+
+        <!-- Avatar (initiales) -->
+        <TextView
+            android:id="@+id/friend_avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:gravity="center"
+            android:text="TM"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:background="@drawable/bg_circle"/>
+
+        <!-- Infos -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
+
+            <TextView
+                android:id="@+id/friend_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thomas Martin"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/friend_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12340 pas · 2100 kcal"
+                android:textColor="#666"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <!-- Objectif -->
+        <TextView
+            android:id="@+id/friend_goal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="email@exemple.com"
+            android:text="123%"
             android:textStyle="bold"
-            android:textSize="16sp" />
+            android:textSize="16sp"/>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8.dp">
-
-            <TextView
-                android:id="@+id/friend_steps"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Pas : 0"
-                android:textColor="#2196F3" />
-
-            <TextView
-                android:id="@+id/friend_calories"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="Cal : 0 kcal"
-                android:textColor="#F44336" />
-        </LinearLayout>
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+
+</com.google.android.material.card.MaterialCardView>

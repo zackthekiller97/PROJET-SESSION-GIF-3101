@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -17,10 +18,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
 import java.util.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
 
@@ -29,6 +32,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var initialSteps = -1f
     private val db = FirebaseFirestore.getInstance()
     private val currentUser = FirebaseAuth.getInstance().currentUser
+
+    private var userGoal = 10000
 
 
     private val requestPermissionLauncher = registerForActivityResult(
@@ -44,6 +49,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         checkPermissions()
         setupNavigation()
+        setupGoalFeature() // 👈 AJOUT
     }
 
     private fun setupNavigation() {
@@ -144,7 +150,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         val km = (steps * 0.762) / 1000
         val kcal = steps * 0.04
-        val percent = (steps.toFloat() / 10000f * 100).toInt()
+        val percent = (steps.toFloat() / userGoal * 100).toInt()
+        progressBar?.max = userGoal
 
         tvKm?.text = String.format("%.2f", km)
         tvKcal?.text = kcal.toInt().toString()
@@ -166,15 +173,70 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
             db.collection("users").document(user.uid)
                 .collection("dailyStats").document(today)
-                .set(data)
+                .set(data, SetOptions.merge())
 
             db.collection("users").document(user.uid)
-                .update(
+                .set(
                     mapOf(
                         "lastSteps" to steps,
                         "lastCalories" to calories
-                    )
+                    ),
+                    SetOptions.merge()
                 )
+        }
+    }
+    private fun setupGoalFeature() {
+        val etGoal = findViewById<EditText>(R.id.et_goalSteps)
+        val btnSetGoal = findViewById<MaterialButton>(R.id.btn_startTracking)
+
+        // Charger l'objectif existant depuis Firebase
+        loadGoalFromFirebase(etGoal)
+
+        btnSetGoal.setOnClickListener {
+            val goalText = etGoal.text.toString()
+
+            if (goalText.isEmpty()) {
+                Toast.makeText(this, "Entrez un objectif valide", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val goal = goalText.toInt()
+
+            if (goal <= 0) {
+                Toast.makeText(this, "Objectif invalide", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            saveGoalToFirebase(goal)
+        }
+    }
+
+    private fun saveGoalToFirebase(goal: Int) {
+        currentUser?.let { user ->
+            db.collection("users")
+                .document(user.uid)
+                .set(mapOf("goalSteps" to goal), SetOptions.merge())
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Objectif enregistré", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun loadGoalFromFirebase(etGoal: EditText) {
+        currentUser?.let { user ->
+            db.collection("users")
+                .document(user.uid)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists() && document.contains("goalSteps")) {
+                        val goal = document.getLong("goalSteps")?.toInt() ?: 10000
+                        etGoal.setText(goal.toString())
+                        userGoal = goal
+                    }
+                }
         }
     }
 

@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="Projet_session_GIF-3101_Equipe_11.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-04-18T18:12:49.520260700Z">
+        <DropdownSelection timestamp="2026-04-25T22:16:57.827068800Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Jonathan\.android\avd\Pixel_7.avd" />

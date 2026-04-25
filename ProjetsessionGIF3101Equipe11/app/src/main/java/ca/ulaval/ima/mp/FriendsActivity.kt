@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,8 @@ class FriendsActivity : AppCompatActivity() {
     private val auth = FirebaseAuth.getInstance()
     private lateinit var friendsAdapter: FriendsAdapter
     private val friendsList = mutableListOf<User>()
+
+    private var currentUser: User? = null
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -113,18 +116,51 @@ class FriendsActivity : AppCompatActivity() {
                     friendsAdapter.notifyDataSetChanged()
                     return@addOnSuccessListener
                 }
+                currentUser = document.toObject(User::class.java)
 
                 db.collection("users")
                     .whereIn(FieldPath.documentId(), friendIds)
                     .addSnapshotListener { snapshots, e ->
                         if (e != null) return@addSnapshotListener
 
-                        friendsList.clear()
-
-                        snapshots?.forEach { doc ->
+                        val updatedList = snapshots?.map { doc ->
                             val user = doc.toObject(User::class.java)
-                            friendsList.add(user)
-                        }
+                            user.copy(id = doc.id)
+                        } ?: emptyList()
+
+                        // TRI par nombre de pas (classement)
+                        val sortedList = updatedList.sortedByDescending { it.lastSteps }
+
+                        val me = currentUser ?: return@addSnapshotListener
+
+                        // Liste complète incluant toi
+                        val allUsers = mutableListOf<User>()
+                        allUsers.addAll(sortedList)
+                        allUsers.add(me)
+
+                        // Trier pour classement global
+                        val ranked = allUsers.sortedByDescending { it.lastSteps }
+
+                        // Trouver ton rang
+                        val myRank = ranked.indexOfFirst { it.email == me.email } + 1
+
+                        // Moyenne des amis (sans toi)
+                        val avgSteps = if (sortedList.isNotEmpty())
+                            sortedList.map { it.lastSteps }.average()
+                        else 0.0
+
+                        // % vs moyenne
+                        val percentVsAvg = if (avgSteps > 0)
+                            ((me.lastSteps - avgSteps) / avgSteps * 100).toInt()
+                        else 0
+
+                        findViewById<TextView>(R.id.tv_rank).text = "$myRank"
+                        findViewById<TextView>(R.id.tv_steps_today).text = "${me.lastSteps}"
+                        findViewById<TextView>(R.id.tv_vs_avg).text = "${percentVsAvg}%"
+
+                        // Mise à jour propre
+                        friendsList.clear()
+                        friendsList.addAll(sortedList)
 
                         friendsAdapter.notifyDataSetChanged()
                     }
