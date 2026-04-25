@@ -112,6 +112,7 @@ class CaloriesActivity : AppCompatActivity() {
         nav.selectedItemId = R.id.nav_calories
         nav.setOnItemSelectedListener {
             when (it.itemId) {
+                R.id.nav_friends -> startActivity(Intent(this, FriendsActivity::class.java))
                 R.id.nav_steps -> startActivity(Intent(this, MainActivity::class.java))
                 R.id.nav_stats -> startActivity(Intent(this, StatsActivity::class.java))
                 R.id.nav_logout -> {

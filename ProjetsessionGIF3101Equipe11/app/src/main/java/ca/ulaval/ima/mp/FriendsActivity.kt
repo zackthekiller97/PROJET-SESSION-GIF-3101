@@ -105,7 +105,8 @@ class FriendsActivity : AppCompatActivity() {
         db.collection("users").document(currentUserId).get()
             .addOnSuccessListener { document ->
 
-                val friendIds = document.get("friends") as? List<String> ?: listOf()
+                val friendIds = (document.get("friends") as? List<String> ?: listOf())
+                    .filter { it.isNotBlank() }
 
                 if (friendIds.isEmpty()) {
                     friendsList.clear()
