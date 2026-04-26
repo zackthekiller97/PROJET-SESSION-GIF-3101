@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Button
 
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -70,15 +71,23 @@ class FriendsActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-                R.id.nav_logout -> {
-                    auth.signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+                R.id.nav_detail -> {
+                    startActivity(Intent(this, DetailActivity::class.java))
+                    finish()
                     true
                 }
                 else -> false
             }
+        }
+
+        val btnLogout = findViewById<ImageView>(R.id.btn_logout)
+
+        btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         }
     }
 

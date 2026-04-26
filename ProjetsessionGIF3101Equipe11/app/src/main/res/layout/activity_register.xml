@@ -157,6 +157,17 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="12dp"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="⚠️ Cette application fournit des estimations générales. Si vous avez des problèmes de santé ou des besoins spécifiques, consultez un professionnel de la santé afin d’obtenir un plan adapté."
+                android:textSize="12sp"
+                android:textColor="#666666"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center"/>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

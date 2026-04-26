@@ -32,6 +32,8 @@
 
         <activity android:name=".StatsActivity" />
 
+        <activity android:name=".DetailActivity" />
+
     </application>
 
 </manifest>

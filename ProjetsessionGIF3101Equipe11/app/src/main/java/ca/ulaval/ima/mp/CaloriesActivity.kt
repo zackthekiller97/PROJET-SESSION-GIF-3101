@@ -34,6 +34,16 @@ class CaloriesActivity : AppCompatActivity() {
         }
 
         listenToDailyCalories()
+
+        val btnLogout = findViewById<ImageView>(R.id.btn_logout)
+
+        btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -115,11 +125,7 @@ class CaloriesActivity : AppCompatActivity() {
                 R.id.nav_friends -> startActivity(Intent(this, FriendsActivity::class.java))
                 R.id.nav_steps -> startActivity(Intent(this, MainActivity::class.java))
                 R.id.nav_stats -> startActivity(Intent(this, StatsActivity::class.java))
-                R.id.nav_logout -> {
-                    auth.signOut()
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
-                }
+                R.id.nav_detail -> startActivity(Intent(this, DetailActivity::class.java))
             }
             true
         }

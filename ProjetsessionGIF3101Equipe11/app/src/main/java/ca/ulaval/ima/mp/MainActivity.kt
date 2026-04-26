@@ -11,6 +11,7 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -30,9 +31,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
     private var initialSteps = -1f
+    private var currentSteps = 0
+    private var isDataLoaded = false
     private val db = FirebaseFirestore.getInstance()
     private val currentUser = FirebaseAuth.getInstance().currentUser
-
     private var userGoal = 10000
 
 
@@ -47,9 +49,31 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        checkPermissions()
+        loadTodaySteps()
         setupNavigation()
-        setupGoalFeature() // 👈 AJOUT
+        setupGoalFeature()
+
+        val btnLogout = findViewById<ImageView>(R.id.btn_logout)
+
+        btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        stepSensor?.also {
+            sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager?.unregisterListener(this)
     }
 
     private fun setupNavigation() {
@@ -76,11 +100,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                     finish()
                     true
                 }
-                R.id.nav_logout -> {
-                    FirebaseAuth.getInstance().signOut()
-                    val intent = Intent(this, LoginActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
+                R.id.nav_detail -> {
+                    startActivity(Intent(this, DetailActivity::class.java))
+                    overridePendingTransition(0, 0)
+                    finish()
                     true
                 }
                 else -> false
@@ -115,13 +138,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     private fun startSimulation() {
-        var simulatedSteps = 0
+        var simulatedSteps = currentSteps
         val handler = android.os.Handler(mainLooper)
         val runnable = object : Runnable {
             override fun run() {
-                simulatedSteps += 50  // +50 pas toutes les secondes
+                simulatedSteps += 10
                 updateUIAndFirebase(simulatedSteps)
-                handler.postDelayed(this, 1000)
+                handler.postDelayed(this, 10000)
             }
         }
         handler.post(runnable)
@@ -129,7 +152,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onSensorChanged(event: SensorEvent?) {
         event?.let {
-            if (initialSteps < 0) initialSteps = it.values[0]
+            if (initialSteps < 0) {
+                initialSteps = it.values[0]
+            }
+
             val currentSteps = (it.values[0] - initialSteps).toInt()
             updateUIAndFirebase(currentSteps)
         }
@@ -168,6 +194,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             val data = hashMapOf(
                 "steps" to steps,
                 "caloriesBurned" to calories,
+                "sensorBase" to initialSteps,
                 "date" to today
             )
 
@@ -207,6 +234,10 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 return@setOnClickListener
             }
 
+            userGoal = goal
+
+            updateUIAndFirebase(currentSteps)
+
             saveGoalToFirebase(goal)
         }
     }
@@ -221,6 +252,30 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun loadTodaySteps() {
+        currentUser?.let { user ->
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
+            db.collection("users").document(user.uid)
+                .collection("dailyStats").document(today)
+                .get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val steps = document.getLong("steps")?.toInt() ?: 0
+                        val savedBase = document.getDouble("sensorBase")?.toFloat()
+
+                        if (savedBase != null) {
+                            initialSteps = savedBase
+                        }
+                        currentSteps = steps
+                        isDataLoaded = true
+                        updateUIAndFirebase(currentSteps)
+                        checkPermissions()
+                    }
                 }
         }
     }

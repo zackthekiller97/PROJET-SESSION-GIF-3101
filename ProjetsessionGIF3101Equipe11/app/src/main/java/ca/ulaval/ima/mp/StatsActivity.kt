@@ -3,6 +3,7 @@ package ca.ulaval.ima.mp
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.LineChart
@@ -44,6 +45,16 @@ class StatsActivity : AppCompatActivity() {
 
 
         fetchDataForRange(7)
+
+        val btnLogout = findViewById<ImageView>(R.id.btn_logout)
+
+        btnLogout.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+
+            val intent = Intent(this, LoginActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+        }
     }
 
     private fun fetchDataForRange(days: Int) {
@@ -149,10 +160,8 @@ class StatsActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_stats -> true
-                R.id.nav_logout -> {
-                    auth.signOut()
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
+                R.id.nav_detail -> {
+                    startActivity(Intent(this, DetailActivity::class.java))
                     true
                 }
                 else -> false
